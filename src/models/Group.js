@@ -1,4 +1,3 @@
-import { PrivilegeType } from '@themost/data';
 import {
     CascadeType,
     Column,
@@ -9,7 +8,6 @@ import {
     JoinTable,
     ManyToMany,
     PostInit,
-    PostInitEvent,
     PrivilegeMask
 } from '@themost/jspa';
 import { Account, AccountType } from './Account';
@@ -17,9 +15,18 @@ import { Account, AccountType } from './Account';
 @Entity({
     privileges: [
         {
-            type: PrivilegeType.Global,
-            mask: PrivilegeMask.Read,
-            account: '*'
+            "mask": 1,
+            "type": "global",
+            "account": "*"
+        },
+        {
+            "mask": 15,
+            "type": "global"
+        },
+        {
+            "mask": 15,
+            "type": "global",
+            "account": "Administrators"
         }
     ]
 })

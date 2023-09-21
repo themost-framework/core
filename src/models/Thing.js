@@ -36,7 +36,15 @@ class Thing extends DataObject {
     description;
 
     @Column({
-        type: ColumnType.Text
+        type: ColumnType.Text,
+        insertable: true,
+        updatable: false
+    })
+    @Formula((event) => {
+        if (typeof event.target.getSuperModel === 'function') {
+            return event.target.getSuperModel().name;
+        }
+        return event.model.name;
     })
     additionalType;
 

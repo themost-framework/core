@@ -1,7 +1,24 @@
-import { CascadeType, Column, ColumnType, Entity, EntityListeners, FetchType, Formula, JoinTable, ManyToMany, PostInit, PostInitEvent, PostLoad } from '@themost/jspa';
+import { CascadeType, Column, ColumnDefault, ColumnType, Entity, EntityListeners, FetchType, Formula, JoinTable, ManyToMany, PostInit, PostInitEvent, PostLoad } from '@themost/jspa';
 import { Account, AccountType } from './Account';
 
-@Entity()
+@Entity({
+    privileges: [
+        {
+          "mask": 15,
+          "type": "global"
+        },
+        {
+          "mask": 15,
+          "type": "global",
+          "account": "Administrators"
+        },
+        {
+          "mask": 1,
+          "type": "self",
+          "filter": "id eq me()"
+        }
+      ]
+})
 @EntityListeners()
 class User extends Account {
     @Column({
@@ -17,7 +34,7 @@ class User extends Account {
         nullable: false,
         type: ColumnType.Boolean
     })
-    @Formula(() => true)
+    @ColumnDefault(() => true)
     enabled;
 
     @Column({

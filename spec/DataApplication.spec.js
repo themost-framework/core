@@ -3,6 +3,7 @@ import path from 'path';
 import { User } from '../src/models/User';
 import { TestUtils } from './TestUtils';
 import { Group } from '../src/models/Group';
+import { TraceUtils } from '@themost/common';
 
 describe('DataApplication', () => {
 
@@ -69,13 +70,28 @@ describe('DataApplication', () => {
     });
 
     it('should create user', async () => {
-        TestUtils.executeInTransaction(context, async () => {
-            await context.model(User).silent().save({
-                name: 'user1'
-            });
-            const item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
-            expect(item).toBeTruthy();
+        await context.model(User).silent().save({
+            name: 'user1'
         });
+        /**
+         * @type {import('../src/index').Thing}
+         */
+        const item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+        expect(item).toBeTruthy();
+    });
+
+    it('should fail to update user', async () => {
+        await context.model(User).silent().save({
+            name: 'user1'
+        });
+        /**
+         * @type {import('../src/index').Thing}
+         */
+        let item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+        item.additionalType = 'AnotherUser';
+        context.model(User).silent().save(item)
+        item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+        expect(item.additionalType).toEqual('User');
     });
 
 
@@ -91,6 +107,14 @@ describe('DataApplication', () => {
             });
             item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
             expect(item).toBeFalsy();
+        });
+    });
+
+    it('should get groups', async () => {
+        TestUtils.executeInTransaction(context, async () => {
+            const items = await context.model(Group).getItems();
+            expect(items).toBeTruthy();
+            expect(items.length).toBeTruthy();
         });
     });
 

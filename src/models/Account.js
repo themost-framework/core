@@ -6,7 +6,24 @@ const AccountType  = {
     Group: 1
 }
 
-@Entity()
+@Entity({
+    privileges: [
+        {
+          "mask": 15,
+          "type": "global"
+        },
+        {
+          "mask": 15,
+          "type": "global",
+          "account": "Administrators"
+        },
+        {
+          "mask": 1,
+          "type": "self",
+          "filter": "id eq me()"
+        }
+      ]
+})
 @Table({
     indexes: [
         {

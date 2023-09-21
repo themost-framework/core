@@ -1,9 +1,13 @@
-import { Basic, Column, ColumnType, Counter, Entity, FetchType, Formula, GeneratedValue, GenerationType, Id, ManyToOne } from '@themost/jspa';
-import { Account } from './Account';
-import { User } from './User';
-import { Workspace } from './Workspace';
+import { Column, ColumnType, Entity, FetchType, Formula, GeneratedValue, GenerationType, Id, ManyToOne } from '@themost/jspa';
 
-@Entity()
+@Entity({
+    privileges: [
+        {
+            "mask": 15,
+            "type": "global"
+        }
+    ]
+})
 class Permission {
     @Id()
     @Column({
@@ -87,6 +91,28 @@ class Permission {
         fetchType: FetchType.Lazy
     })
     modifiedBy;
+
+    // noinspection JSUnusedLocalSymbols
+    @PostInit()
+    async onPostInit(event) {
+        const count = await event.model.asQueryable().silent().count();
+        if (count) {
+            return;
+        }
+        await event.model.silent().save([
+            {
+                privilege: "Permission",
+                account: {
+                    name: "Administrators"
+                },
+                target: "0",
+                workspace: {
+                    alternateName: 'root'
+                }
+            }
+        ]);
+    }
+
 }
 
 export {
