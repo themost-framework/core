@@ -1,0 +1,51 @@
+{
+  "name": "@themost/core",
+  "version": "2.0.0",
+  "description": "@themost-framework core data object",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.js",
+  "scripts": {
+    "test": "nyc jasmine",
+    "build": "rimraf dist && rollup -c rollup.config.js"
+  },
+  "peerDependencies": {
+    "@themost/data": "^2",
+    "@themost/query": "^2",
+    "@themost/common": "^2",
+    "@themost/xml": "^2",
+    "@themost/jspa": "^1"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themost-framework/core.git"
+  },
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/themost-framework/core/issues"
+  },
+  "homepage": "https://github.com/themost-framework/core#readme",
+  "devDependencies": {
+    "@babel/core": "^7.22.1",
+    "@babel/eslint-parser": "^7.21.8",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.22.15",
+    "@babel/preset-env": "^7.22.4",
+    "@babel/register": "^7.21.0",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@themost/sqlite": "^2.6.14",
+    "@types/jasmine": "^4.3.2",
+    "@types/node": "^17.0.23",
+    "dotenv": "^8.2.0",
+    "eslint": "^8.42.0",
+    "jasmine": "^5.0.0",
+    "jasmine-spec-reporter": "^7.0.0",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^3.23.1",
+    "rollup-plugin-dts": "^5.3.0",
+    "typescript": "^4.6.3"
+  }
+}

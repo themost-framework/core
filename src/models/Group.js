@@ -1,0 +1,86 @@
+import { PrivilegeType } from '@themost/data';
+import {
+    CascadeType,
+    Column,
+    ColumnType,
+    Entity,
+    FetchType,
+    Formula,
+    JoinTable,
+    ManyToMany,
+    PostInit,
+    PostInitEvent,
+    PrivilegeMask
+} from '@themost/jspa';
+import { Account, AccountType } from './Account';
+
+@Entity({
+    privileges: [
+        {
+            type: PrivilegeType.Global,
+            mask: PrivilegeMask.Read,
+            account: '*'
+        }
+    ]
+})
+class Group extends Account {
+    @Formula(() => AccountType.Group)
+    @Column({
+        nullable: false,
+        updatable: false,
+        type: ColumnType.Integer
+    })
+    accountType = AccountType.Group;
+
+    @ManyToMany({
+        targetEntity: 'Account',
+        fetchType: FetchType.Lazy,
+        cascadeType: CascadeType.Detach
+    })
+    @JoinTable({
+        name: 'GroupMembers',
+        joinColumns: [
+            {
+                name: 'object',
+                referencedColumnName: 'id'
+            }
+        ],
+        inverseJoinColumns: [
+            {
+                name: 'value',
+                referencedColumnName: 'id'
+            }
+        ]
+    })
+    members;
+
+    // noinspection JSUnusedLocalSymbols
+    @PostInit()
+    async onPostInit(event) {
+        const count = await event.model.asQueryable().silent().count();
+        if (count) {
+            return;
+        }
+        await event.model.silent().save([
+            {
+                name: 'Administrators',
+                alternateName: 'administrators',
+                accountType: AccountType.Group
+            },
+            {
+                name: 'Users',
+                alternateName: 'users',
+                accountType: AccountType.Group
+            },
+            {
+                name: 'Guests',
+                alternateName: 'guests',
+                accountType: AccountType.Group
+            }
+        ]);
+    }
+}
+
+export {
+    Group
+}
