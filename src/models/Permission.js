@@ -1,4 +1,4 @@
-import { Column, ColumnType, Entity, FetchType, Formula, GeneratedValue, GenerationType, Id, ManyToOne } from '@themost/jspa';
+import { Column, ColumnType, PostInit, Entity, FetchType, Formula, GeneratedValue, GenerationType, Id, ManyToOne } from '@themost/jspa';
 
 @Entity({
     privileges: [

@@ -1,4 +1,4 @@
-import { Entity } from '@themost/jspa';
+import { Entity, Table, PostInit } from '@themost/jspa';
 import { Thing } from './Thing';
 
 @Entity({
