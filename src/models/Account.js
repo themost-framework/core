@@ -30,11 +30,6 @@ class Account extends Thing {
         type: ColumnType.Text
     })
     name;
-    @Column({
-        nullable: false,
-        type: ColumnType.Text
-    })
-    alternateName;
 }
 
 export {
