@@ -13,6 +13,25 @@ class User extends Account {
     @Formula(() => AccountType.User)
     accountType = AccountType.User;
 
+    @Column({
+        nullable: false,
+        type: ColumnType.Boolean
+    })
+    @Formula(() => true)
+    enabled;
+
+    @Column({
+        nullable: true,
+        type: ColumnType.Integer
+    })
+    logonCount;
+
+    @Column({
+        nullable: true,
+        type: ColumnType.DateTime
+    })
+    lastLogon;
+
     @ManyToMany({
         targetEntity: 'Group',
         cascadeType: CascadeType.Detach,
