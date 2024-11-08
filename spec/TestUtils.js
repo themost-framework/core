@@ -1,7 +1,6 @@
 /**
  * @description An error for cancelling transaction in testing environments
  */
-import { DataContext } from '@themost/data';
 import {DataCacheStrategy} from '@themost/data';
 
 export class CancelTransactionError extends Error {
@@ -13,7 +12,7 @@ export class CancelTransactionError extends Error {
 export class TestUtils {
     /**
      * Wraps DataAdapter.executeInTransaction() for using in testing environments
-     * @param {DataContext} context
+     * @param {import('@themost/data').DataContext} context
      * @param {Function} func
      * @returns {Promise<any>}
      */

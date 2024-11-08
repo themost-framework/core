@@ -11,15 +11,15 @@ module.exports = {
     ],
     plugins: [
         [
-            "@babel/plugin-proposal-decorators",
+            '@babel/plugin-proposal-decorators',
             {
-                "legacy": true
+                'legacy': true
             }
         ],
         [
-            "@babel/plugin-proposal-class-properties",
+            '@babel/plugin-proposal-class-properties',
             {
-                "legacy": true
+                'legacy': true
             }
         ]
     ]

@@ -1,7 +1,7 @@
-import { DataApplication, DataConfigurationStrategy, SchemaLoaderStrategy } from '@themost/data';
-import { User, Group, SchemaLoader } from '@themost/core';
+import { SchemaLoaderStrategy } from '@themost/data';
+import { User, Group } from '@themost/core';
 import { TestUtils } from './TestUtils';
-import { SqliteAdapter } from '@themost/sqlite';
+import {TestApplication} from './TestApplication';
 
 describe('DataApplication', () => {
 
@@ -10,33 +10,11 @@ describe('DataApplication', () => {
      */
     let context;
     /**
-     * @type {DataApplication}
+     * @type {TestApplication}
      */
     let app;
     beforeAll(async () => {
-        /**
-         * @type {DataApplication}
-         */
-        app = new DataApplication(process.cwd());
-        const conf = app.getConfiguration().getStrategy(DataConfigurationStrategy);
-        conf.adapterTypes.set('sqlite', {
-            name: 'Sqlite Adapter',
-            type: SqliteAdapter
-        });
-        conf.adapters.push({
-            name: 'test',
-            default: true,
-            invariantName: 'sqlite',
-            options: {
-                database: ':memory:'
-            }
-        });
-        // noinspection JSValidateTypes
-        /**
-         * @type {import('@themost/data').DefaultSchemaLoaderStrategy}
-         */
-        const strategy = app.getConfiguration().getStrategy(SchemaLoaderStrategy);
-        strategy.loaders.push(new SchemaLoader(app.getConfiguration()));
+        app = new TestApplication();
         context = app.createContext();
     });
 
@@ -45,27 +23,46 @@ describe('DataApplication', () => {
             await context.finalizeAsync();
         }
         if (app) {
-            await TestUtils.finalize(app);
+            await app.finalizeAsync();
         }
 
     });
 
     it('should get schema', () => {
         const schemaLoader = context.getConfiguration().getStrategy(SchemaLoaderStrategy);
-        const schema = schemaLoader.getModelDefinition('Thing');
-        expect(schema).toBeTruthy();
+        [
+            'Thing',
+            'Account',
+            'User',
+            'Group',
+            'Permission',
+            'Workspace'
+        ].forEach((name) => {
+            const schema = schemaLoader.getModelDefinition(name);
+            expect(schema).toBeTruthy();
+        });
     });
 
     it('should create user', async () => {
         await TestUtils.executeInTransaction(context, async () => {
             await context.model(User).silent().save({
-                name: 'user1'
+                name: 'alexis.rees@example.com',
+                groups: [
+                    {
+                        name: 'Administrators'
+                    }
+                ]
             });
             /**
-             * @type {import('../src/index').Thing}
+             * @type {import('@themost/core').User}
              */
-            const item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+            const item = await context.model(User).where(
+                (x) => x.name === 'alexis.rees@example.com'
+            ).expand((x) => x.groups).silent().getItem();
             expect(item).toBeTruthy();
+            expect(item.groups.length).toBeTruthy();
+            const firstGroup = item.groups[0];
+            expect(firstGroup.name).toEqual('Administrators');
         });
     });
 
