@@ -2,6 +2,9 @@
     "compilerOptions": {
         "experimentalDecorators": true,
         "paths": {
+            "@themost/core": [
+                "src/index"
+            ]
         }
     }
 }

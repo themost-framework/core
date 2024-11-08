@@ -1,9 +1,7 @@
-import { DataApplication, DataConfigurationStrategy, SchemaLoaderStrategy, DefaultSchemaLoaderStrategy } from '@themost/data';
-import path from 'path';
-import { User } from '../src/models/User';
+import { DataApplication, DataConfigurationStrategy, SchemaLoaderStrategy } from '@themost/data';
+import { User, Group, SchemaLoader } from '@themost/core';
 import { TestUtils } from './TestUtils';
-import { Group } from '../src/models/Group';
-import { TraceUtils } from '@themost/common';
+import { SqliteAdapter } from '@themost/sqlite';
 
 describe('DataApplication', () => {
 
@@ -11,49 +9,34 @@ describe('DataApplication', () => {
      * @type {import('@themost/data').DataContext}
      */
     let context;
+    /**
+     * @type {DataApplication}
+     */
+    let app;
     beforeAll(async () => {
         /**
          * @type {DataApplication}
          */
-        const app = new DataApplication(process.cwd());
-        app.configuration.setSourceAt('settings/schema/loaders', [
-            {
-                loaderType: '@themost/jspa/platform-server#DefaultEntityLoaderStrategy'
-            }
-        ]);
-        app.configuration.setSourceAt('settings/jspa/imports', [
-            path.resolve(__dirname, '../src/index')
-        ]);
-
-        app.configuration.setSourceAt('adapterTypes', [
-            {
-                name: 'Test Adapter',
-                invariantName: 'sqlite',
-                type: '@themost/sqlite'
-            }
-        ]);
-        app.configuration.setSourceAt('adapters', [
-            {
-                name: 'test',
-                default: true,
-                invariantName: 'sqlite',
-                options: {
-                    database: ':memory:'
-                }
-            }
-        ]);
-
-        app.configuration.useStrategy(function ModuleLoader() {}, function NodeModuleLoader() {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            this.require = (id) => {
-                return require(id);
+        app = new DataApplication(process.cwd());
+        const conf = app.getConfiguration().getStrategy(DataConfigurationStrategy);
+        conf.adapterTypes.set('sqlite', {
+            name: 'Sqlite Adapter',
+            type: SqliteAdapter
+        });
+        conf.adapters.push({
+            name: 'test',
+            default: true,
+            invariantName: 'sqlite',
+            options: {
+                database: ':memory:'
             }
         });
-        // reload schema
-        app.configuration.useStrategy(SchemaLoaderStrategy, DefaultSchemaLoaderStrategy);
-        // reload configuration
-        app.configuration.useStrategy(DataConfigurationStrategy, DataConfigurationStrategy);
-
+        // noinspection JSValidateTypes
+        /**
+         * @type {import('@themost/data').DefaultSchemaLoaderStrategy}
+         */
+        const strategy = app.getConfiguration().getStrategy(SchemaLoaderStrategy);
+        strategy.loaders.push(new SchemaLoader(app.getConfiguration()));
         context = app.createContext();
     });
 
@@ -61,6 +44,10 @@ describe('DataApplication', () => {
         if (context) {
             await context.finalizeAsync();
         }
+        if (app) {
+            await TestUtils.finalize(app);
+        }
+
     });
 
     it('should get schema', () => {
@@ -70,48 +57,52 @@ describe('DataApplication', () => {
     });
 
     it('should create user', async () => {
-        await context.model(User).silent().save({
-            name: 'user1'
+        await TestUtils.executeInTransaction(context, async () => {
+            await context.model(User).silent().save({
+                name: 'user1'
+            });
+            /**
+             * @type {import('../src/index').Thing}
+             */
+            const item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+            expect(item).toBeTruthy();
         });
-        /**
-         * @type {import('../src/index').Thing}
-         */
-        const item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
-        expect(item).toBeTruthy();
     });
 
     it('should fail to update user', async () => {
-        await context.model(User).silent().save({
-            name: 'user1'
+        await TestUtils.executeInTransaction(context, async () => {
+            const Users = context.model(User).silent();
+            await Users.save({
+                name: 'user1'
+            });
+            /**
+             * @type {import('../src/index').Thing}
+             */
+            let item = await Users.where((x) => x.name === 'user1').getItem();
+            item.additionalType = 'AnotherUser';
+            await context.model(User).silent().save(item)
+            item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+            expect(item.additionalType).toEqual('User');
         });
-        /**
-         * @type {import('../src/index').Thing}
-         */
-        let item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
-        item.additionalType = 'AnotherUser';
-        context.model(User).silent().save(item)
-        item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
-        expect(item.additionalType).toEqual('User');
     });
 
 
     it('should remove user', async () => {
-        TestUtils.executeInTransaction(context, async () => {
-            await context.model(User).silent().save({
+        await TestUtils.executeInTransaction(context, async () => {
+            const Users = context.model(User).silent();
+            await Users.save({
                 name: 'user1'
             });
-            let item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+            let item = await Users.where((x) => x.name === 'user1').getItem();
             expect(item).toBeTruthy();
-            await context.model(User).silent().remove({
-                name: 'user1'
-            });
-            item = await context.model(User).where((x) => x.name === 'user1').silent().getItem();
+            await Users.remove(item);
+            item = await Users.where((x) => x.name === 'user1').getItem();
             expect(item).toBeFalsy();
         });
     });
 
     it('should get groups', async () => {
-        TestUtils.executeInTransaction(context, async () => {
+        await TestUtils.executeInTransaction(context, async () => {
             const items = await context.model(Group).getItems();
             expect(items).toBeTruthy();
             expect(items.length).toBeTruthy();
@@ -119,7 +110,7 @@ describe('DataApplication', () => {
     });
 
     it('should get groups', async () => {
-        TestUtils.executeInTransaction(context, async () => {
+        await TestUtils.executeInTransaction(context, async () => {
             const items = await context.model(Group).getItems();
             expect(items).toBeTruthy();
             expect(items.length).toBeTruthy();

@@ -1,0 +1,54 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "@id": "https://themost.io/schemas/Workspace",
+    "name": "Workspace",
+    "title": "Workspaces",
+    "hidden": false,
+    "sealed": false,
+    "abstract": false,
+    "version": "1.0.0",
+    "inherits": "Thing",
+    "classPath": "@themost/core#Workspace",
+    "fields": [
+        {
+            "@id": "http://schema.org/url",
+            "name": "url",
+            "title": "url",
+            "description": "URL of the item.",
+            "nullable": false,
+            "type": "URL"
+        }
+    ],
+    "privileges": [
+        {
+            "mask": 1,
+            "type": "global",
+            "account": "*"
+        },
+        {
+            "mask": 15,
+            "type": "global"
+        },
+        {
+            "mask": 15,
+            "type": "global",
+            "account": "Administrators"
+        }
+    ],
+    "constraints": [
+        {
+            "type": "unique",
+            "fields": [
+                "url"
+            ]
+        }
+    ],
+    "seed": [
+        {
+            "name": "Root Workspace",
+            "alternateName": "root",
+            "url": "/",
+            "description": "The default workspace associated with this application."
+        }
+    ]
+}

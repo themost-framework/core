@@ -1,5 +1,5 @@
 import { Thing } from './Thing';
 
-export class Workspace extends Thing {
-    
+export declare class Workspace extends Thing {
+
 }

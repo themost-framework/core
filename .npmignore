@@ -5,6 +5,8 @@ node_modules
 spec
 .nycrc.json
 .nyc_output
+coverage
+jest.config.js
 
 
 # eslint
