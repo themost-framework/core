@@ -1,3 +1,4 @@
+import { enumerable } from '@themost/client';
 import { Account } from './Account';
 import {EdmMapping} from '@themost/data';
 
@@ -8,30 +9,12 @@ class Group extends Account {
     }
 
     /**
-     * Add user to group
-     * @param {Account} user 
-     * @returns {Promise<boolean>}
+     * Gets a queryable collection of members that belong to this group
+     * @returns {import('@themost/data').DataObjectJunction}
      */
-    async addUserAsync(user) {
-        /**
-         * @type {import('@themost/data').DataObjectJunction}   
-         */
-        const members = this.property('members');
-        const res = await members.insert(user);
-        return res != null;
-    }
-
-    /**
-     * Remove user from group
-     * @param {Account} user 
-     */
-    async removeUserAsync(user) {
-        /**
-         * @type {import('@themost/data').DataObjectJunction}   
-         */
-        const members = this.property('members');
-        const res = await members.remove(user);
-        return res != null;
+    @enumerable(false)
+    get memberCollection() {
+        return this.property('members');
     }
 
 }
